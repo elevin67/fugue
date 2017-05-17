@@ -24,7 +24,7 @@ public class TestGenerator {
     System.out.println("Should be 2 measures: " + phraseMeasures.size() + " measures");
 
     // test parseMeasure
-    Scale firstMeasureScale = generator.parseMeasure(phraseMeasures.get(0));
-    System.out.println("Should be ionian(0): " + firstMeasureScale.getScale());
+    Measure firstMeasure = generator.parseMeasure(phraseMeasures.get(0));
+    System.out.println("Should be ionian(0): " + firstMeasure.getMode().getScale());
   }
 }
