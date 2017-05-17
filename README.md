@@ -1,1 +1,3 @@
-A fugue machine!# fugue
+# fugue
+
+A fugue machine!
