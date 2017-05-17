@@ -106,6 +106,7 @@ public class Generator {
     return scales.get(index);
   }
 
+  // works, we think
   public ArrayList<String> notesInMeasure(ArrayList<Note> measure) {
     ArrayList<String> notes = new ArrayList<String>();
 
@@ -119,6 +120,7 @@ public class Generator {
     return notes;
   }
 
+  // works
   private ArrayList<String[]> getScales(String note) {
     ArrayList<String[]> noteScales = new ArrayList<>();
     int index = notes.indexOf(note);
@@ -137,10 +139,11 @@ public class Generator {
     return noteScales;
   }
 
+  // works
   public String[] getIonian(String note, int index) {
     String[] ionian = new String[7];
     for(int i = 0; i < notes.size(); i++) {
-      if(index > notes.size()) {
+      if(index >= notes.size()) {
         index = 0;
       }
       ionian[i] = notes.get(index);
@@ -150,6 +153,7 @@ public class Generator {
     return ionian;
   }
 
+  // works
   public ArrayList<ArrayList<Note>> breakByMeasure(ArrayList<Note> phrase, double timeSignature) {
     double count = 0;
     ArrayList<ArrayList<Note>> phraseByMeasure = new ArrayList<>();
@@ -159,12 +163,23 @@ public class Generator {
       count += note.getLength();
       measure.add(note);
       if(count >= timeSignature) {
-        phraseByMeasure.add(measure);
+        phraseByMeasure.add(copyNotesIntoArrayList(measure));
         measure.clear();
         count = 0;
       }
     }
 
     return phraseByMeasure;
+  }
+
+  // works
+  public ArrayList<Note> copyNotesIntoArrayList(ArrayList<Note> notes) {
+    ArrayList<Note> notes1 = new ArrayList<>();
+
+    for(int i = 0; i < notes.size(); i++) {
+      notes1.add(notes.get(i));
+    }
+
+    return notes1;
   }
 }
