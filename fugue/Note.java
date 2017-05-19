@@ -42,7 +42,12 @@ public class Note {
     } else if(length == 4.0) {
       return "whole";
     }
-    
+
     return "";
+  }
+
+  @Override
+  public String toString() {
+    return noteToString(note) + " " + lengthToString(length);
   }
 }

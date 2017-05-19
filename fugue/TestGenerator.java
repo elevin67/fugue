@@ -7,24 +7,47 @@ public class TestGenerator {
 
   }
 
+  public ArrayList<Note> makeThemeForBachFugueInCMinor() {
+    ArrayList<Note> fugue = new ArrayList<>();
+    fugue.add(new Note("C",.25));
+    fugue.add(new Note("B",.25));
+    fugue.add(new Note("C",.5));
+    fugue.add(new Note("G",.5));
+    fugue.add(new Note("A-",.5));
+    fugue.add(new Note("C",.25));
+    fugue.add(new Note("B",.25));
+    fugue.add(new Note("C",.5));
+    fugue.add(new Note("D",.5));
+    fugue.add(new Note("G",.5));
+    fugue.add(new Note("C",.25));
+    fugue.add(new Note("B",.25));
+    fugue.add(new Note("C",.5));
+    fugue.add(new Note("D",.5));
+    fugue.add(new Note("F",.25));
+    fugue.add(new Note("G",.25));
+    fugue.add(new Note("A-",.5));
+    fugue.add(new Note("G",.25));
+    fugue.add(new Note("F",.25));
+    fugue.add(new Note("E-",.5));
+
+    return fugue;
+  }
+
   public static void main(String[] args) {
     Generator generator = new Generator();
-    ArrayList<Note> phrase = new ArrayList<>();
-    phrase.add(new Note("A",1));
-    phrase.add(new Note("B",1));
-    phrase.add(new Note("C",1));
-    phrase.add(new Note("D",1));
-    phrase.add(new Note("E",1));
-    phrase.add(new Note("F",1));
-    phrase.add(new Note("G",1));
-    phrase.add(new Note("A",1));
+    TestGenerator tester = new TestGenerator();
+    ArrayList<Note> phrase = tester.makeThemeForBachFugueInCMinor();
 
     // test break by measure
     ArrayList<ArrayList<Note>> phraseMeasures = generator.breakByMeasure(phrase,4);
     System.out.println("Should be 2 measures: " + phraseMeasures.size() + " measures");
 
     // test parseMeasure
-    Measure firstMeasure = generator.parseMeasure(phraseMeasures.get(0));
-    System.out.println("Should be ionian(0): " + firstMeasure.getMode().getScale());
+    Measure measure1 = generator.parseMeasure(phraseMeasures.get(0));
+    System.out.println(measure1);
+
+    // test translate, tonify
+    Measure translatedMeasure1 = generator.translate(measure1, 5, true);
+    System.out.println(translatedMeasure1);
   }
 }

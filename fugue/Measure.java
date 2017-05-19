@@ -18,4 +18,9 @@ public class Measure {
   public ArrayList<Note> getNotes() {
     return notes;
   }
+
+  @Override
+  public String toString() {
+    return notes.size() + " notes in " + scale.toString();
+  }
 }
