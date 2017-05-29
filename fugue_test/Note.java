@@ -1,4 +1,4 @@
-package fugue;
+package fugue_test;
 
 import java.util.ArrayList;
 
