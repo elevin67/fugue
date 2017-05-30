@@ -11,9 +11,9 @@ import java.util.Enumeration;
 import java.util.ArrayList;
 
 public class FugueAnalyzer extends Frame implements JMC {
-    static Score s = new Score();
-    int start = 0;
-    int end = 0;
+  static Score s = new Score();
+  int start = 0;
+  int end = 0;
 
 
   public FugueAnalyzer() {
@@ -45,6 +45,10 @@ public class FugueAnalyzer extends Frame implements JMC {
      }
    }
 
+   // main functions
+
+   // identifies the subject at the beginning of the piece
+   // works
    private Phrase getSubject(Score score) {
      double earliestStartTime = 1000000000.0;
      int startIndex = 0;
@@ -68,51 +72,13 @@ public class FugueAnalyzer extends Frame implements JMC {
      }
 
      // may need to change something with lastStartTime
-     subject = score.getPart(startIndex).getPhrase(0).copy(0,lastStartTime-1);
+     subject = score.getPart(startIndex).getPhrase(0).copy(0,lastStartTime,false,false,false);
+
      return subject;
    }
 
-   private ArrayList<Note> convertPhraseToArrayList(Phrase phrase) {
-     ArrayList<Note> notes = new ArrayList<Note>();
-     for(int i = 0; i < phrase.size(); i++) {
-       notes.add(phrase.getNote(i));
-     }
 
-     while(true) {
-       if(notes.get(0).isRest()) {
-         notes.remove(0);
-       } else if(notes.get(notes.size()-1).isRest()) {
-         notes.remove(notes.size()-1);
-       } else {
-         break;
-       }
-     }
-     return notes;
-   }
-
-   private ArrayList<Note> convertPartToArrayList(Part part) {
-     ArrayList<Note> notes = new ArrayList<>();
-     for(int i = 0; i < part.size(); i++) {
-       Phrase phrase = part.getPhrase(i);
-       for(int j = 0; j < phrase.size(); j++) {
-         notes.add(phrase.getNote(j));
-       }
-     }
-
-     while(true) {
-       if(notes.get(0).isRest()) {
-         notes.remove(0);
-       } else if(notes.get(notes.size()-1).isRest()) {
-         notes.remove(notes.size()-1);
-       } else {
-         break;
-       }
-     }
-
-     return notes;
-
-   }
-
+   // finds all the subjects within the piece, adds the subsequent counterpoint melodies to a data structure
    // going to add more than just the note to the ArrayList, will need to make new object
    private ArrayList<CounterNote> analyzeSubjectCounterpoint(Score score, ArrayList<Note> phrase) {
      ArrayList<CounterNote> counterpoint = new ArrayList<>();
@@ -126,6 +92,10 @@ public class FugueAnalyzer extends Frame implements JMC {
      return counterpoint;
    }
 
+   // functions for analyzeSubjectCounterPoint
+
+   // finds all the subjects in the score
+   // could use a bad suffix table??
    public ArrayList<Subject> findSubjects(Score score, ArrayList<Note> subject) {
      ArrayList<Subject> subjects = new ArrayList<>();
 
@@ -156,34 +126,37 @@ public class FugueAnalyzer extends Frame implements JMC {
      return subjects;
    }
 
-    private boolean containsSubject(int partIndex, int phraseIndex, int noteIndex, Score score, ArrayList<Note> subject) {
-      Part part = score.getPart(partIndex);
-      Phrase phrase = part.getPhrase(phraseIndex);
-      int index = noteIndex + 1;
-      Note prevNote = phrase.getNote(noteIndex);
-      int matches = 0;
-      double threshold = subject.size() * 3.0/4.0;
+   // used by findSubjects
+   // checks if a note is the beginning of a subject in the piece, must pass a "threshold" because every subject won't have identical rhythms
+   // add a check for consistent intervals as well, use similar "threshold"
+   private boolean containsSubject(int partIndex, int phraseIndex, int noteIndex, Score score, ArrayList<Note> subject) {
+     Part part = score.getPart(partIndex);
+     Phrase phrase = part.getPhrase(phraseIndex);
+     int index = noteIndex + 1;
+     Note prevNote = phrase.getNote(noteIndex);
+     int matches = 0;
+     double threshold = subject.size() * 3.0/4.0;
 
-      for(int i = 1; i < subject.size(); i++) {
-        if(!(index >= phrase.size())) {
-          Note note = phrase.getNote(index);
-          Note compNote = subject.get(i);
-          if(note.getRhythmValue() == compNote.getRhythmValue()) {
-            matches++;
-          }
-          index++;
-          prevNote = compNote;
-        } else {
-          break;
-        }
-      }
-      if(matches >= threshold) {
-        start = noteIndex;
-        end = index;
-        return true;
-      }
-      return false;
-    }
+     for(int i = 1; i < subject.size(); i++) {
+       if(!(index >= phrase.size())) {
+         Note note = phrase.getNote(index);
+         Note compNote = subject.get(i);
+         if(note.getRhythmValue() == compNote.getRhythmValue()) {
+           matches++;
+         }
+         index++;
+         prevNote = compNote;
+       } else {
+         break;
+       }
+     }
+     if(matches >= threshold) {
+       start = noteIndex;
+       end = index;
+       return true;
+     }
+     return false;
+   }
 
     // going to add more than just the notes and referenceNote to CounterNote, will modify subject and second for loop
     private ArrayList<CounterNote> addSubjectCounterPoint(Score score, int startIndex, int endIndex, int phraseIndex, int partIndex) {
@@ -191,7 +164,7 @@ public class FugueAnalyzer extends Frame implements JMC {
       Phrase subjectPhrase = subjectPart.getPhrase(phraseIndex);
       double startTime = subjectPhrase.getNoteStartTime(startIndex);
       double endTime = subjectPhrase.getNoteStartTime(endIndex);
-      Phrase subject = subjectPhrase.copy(startTime,endTime);
+      Phrase subject = subjectPhrase.copy(startTime,endTime,false,false,false);
       ArrayList<Part> counterpointParts = new ArrayList<>();
 
       // add all the other phrases concurrent with the subject
@@ -200,7 +173,7 @@ public class FugueAnalyzer extends Frame implements JMC {
           continue;
         }
         Part part = score.getPart(i);
-        counterpointParts.add(part.copy(startTime, endTime));
+        counterpointParts.add(part.copy(startTime, endTime,false,false,false));
       }
 
       // convert counterPointParts into an arrayList of notes
@@ -211,7 +184,14 @@ public class FugueAnalyzer extends Frame implements JMC {
         }
       }
 
-      // turn this into a second function
+      ArrayList<CounterNote> counterpoint = getCounterpointPerNote(counterpointArrayList,subject);
+
+      return counterpoint;
+    }
+
+    // for addSubjectCounterPoint
+    // gets the counterpoint associated with each note in the subject, returns an ArrayList of CounterNotes
+    private ArrayList<CounterNote> getCounterpointPerNote(ArrayList<ArrayList<Note>> counterpointArrayList, Phrase subject) {
       ArrayList<CounterNote> counterpoint = new ArrayList<>();
       // get all the counterpoints from each phrase into our data structure
       for(int i = 0; i < counterpointArrayList.size(); i++) {
@@ -253,6 +233,53 @@ public class FugueAnalyzer extends Frame implements JMC {
       }
 
       return counterpoint;
+    }
+
+    // utility functions
+
+    // converts a Phrase object into an ArrayList of notes, gets rid of rests at beginning and end
+    // works
+    private ArrayList<Note> convertPhraseToArrayList(Phrase phrase) {
+      ArrayList<Note> notes = new ArrayList<Note>();
+      for(int i = 0; i < phrase.size(); i++) {
+        notes.add(phrase.getNote(i));
+      }
+
+      while(true) {
+        if(notes.get(0).isRest()) {
+          notes.remove(0);
+        } else if(notes.get(notes.size()-1).isRest()) {
+          notes.remove(notes.size()-1);
+        } else {
+          break;
+        }
+      }
+      return notes;
+    }
+
+    // converts a Part object to an ArrayList of notes, gets rid of rests at beginning and end
+    // works
+    private ArrayList<Note> convertPartToArrayList(Part part) {
+      ArrayList<Note> notes = new ArrayList<>();
+      for(int i = 0; i < part.size(); i++) {
+        Phrase phrase = part.getPhrase(i);
+        for(int j = 0; j < phrase.size(); j++) {
+          notes.add(phrase.getNote(j));
+        }
+      }
+
+      while(true) {
+        if(notes.get(0).isRest()) {
+          notes.remove(0);
+        } else if(notes.get(notes.size()-1).isRest()) {
+          notes.remove(notes.size()-1);
+        } else {
+          break;
+        }
+      }
+
+      return notes;
+
     }
 
    public static void main(String[] args) {
