@@ -14,7 +14,7 @@ public class Counterpoint {
   // an object that holds a CounterPhrase and all it's subsequent CounterNotes?
   // may not actually be necessary when I think about it. We'll talk.
 
-  public Counterpoint {
+  public Counterpoint() {
 
   }
 }

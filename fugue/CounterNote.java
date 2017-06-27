@@ -15,18 +15,23 @@ public class CounterNote implements JMC {
   Note referenceNote;
   int[] intervals;
   int species;
+  Scale scale;
   PhraseAnalyzer analyzer;
   // will be found in analyzeNoteInPhrase
   boolean consonant;
   int referenceNoteMotion;
   int counterNoteMotion;
 
-  public CounterNote(ArrayList<Note> cN, Note rN) {
+  public CounterNote(ArrayList<Note> cN, Note rN, Scale s, int rm, int cm) {
     analyzer = new PhraseAnalyzer();
     counterNotes = cN;
     referenceNote = rN;
     intervals = findIntervals();
     species = findSpecies();
+    scale = s;
+    consonant = analyzer.checkConsonance(intervals,scale);
+    referenceNoteMotion = rm;
+    counterNoteMotion = cm;
   }
 
   public ArrayList<Note> getCounterNotes() {
@@ -46,10 +51,11 @@ public class CounterNote implements JMC {
   }
 
   private int[] findIntervals() {
-    int counterIntervals = new int[counterNotes.size()];
+    int[] counterIntervals = new int[counterNotes.size()];
     for(int i = 0; i < counterNotes.size(); i++) {
-      counterIntervals[i] = analyzer.getInterval(referenceNote,counterNotes.get(i));
+      counterIntervals[i] = analyzer.getInterval(referenceNote.getPitch(),counterNotes.get(i).getPitch());
     }
+    return counterIntervals;
   }
 
   private int findSpecies() {
@@ -58,6 +64,6 @@ public class CounterNote implements JMC {
 
   @Override
   public String toString() {
-    return "Species " + species;
+    return scale.toString() + " " + species + " " + consonant;
   }
 }

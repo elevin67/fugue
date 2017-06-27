@@ -1,5 +1,7 @@
 package fugue;
 
+import java.util.ArrayList;
+
 public class Scale {
   int rootPitch;
   int scaleMode;

@@ -245,7 +245,7 @@ public class FugueAnalyzer extends Frame implements JMC {
     // for addSubjectCounterPoint
     // this is where you get all the data for the CounterNote object
     // gets the counterpoint associated with each note in the subject, returns an ArrayList of CounterNotes
-    private ArrayList<CounterNote> getCounterpointPerNote(ArrayList<ArrayList<Note>> counterpointParts, Phrase subject) {
+    private ArrayList<CounterNote> getCounterpointPerNote(ArrayList<Part> counterpointParts, Phrase subject) {
       // convert counterPointParts into an arrayList of notes
       ArrayList<ArrayList<Note>> counterpointArrayList = convertPartsToArrayLists(counterpointParts);
       ArrayList<ArrayList<Note>> counterpointPhrases = convertPartsToArrayLists(counterpointParts);
@@ -293,11 +293,15 @@ public class FugueAnalyzer extends Frame implements JMC {
 
           // will need to find other stuff in here to add to CounterNote, will find here
           if(notes.size() > 0) {
-            counterpoint.add(new CounterNote(convertPhraseToArrayList(notes), note));
+            // counterpoint.add(new CounterNote(convertPhraseToArrayList(notes), note));
             if(counterpoint.size() >= 1) {
-              counterpoint.add(analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),counterpoint.get(counterpoint.size() - 1)));
+              CounterNote counter = analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),counterpoint.get(counterpoint.size() - 1));
+              System.out.println(counter);
+              counterpoint.add(counter);
             } else {
-              counterpoint.add(analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),null));
+              CounterNote counter = analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),null);
+              System.out.println(counter);
+              counterpoint.add(counter);
             }
 
           }
@@ -312,11 +316,12 @@ public class FugueAnalyzer extends Frame implements JMC {
     // convert an ArrayList of parts to an ArrayList of ArrayLists of notes
     public ArrayList<ArrayList<Note>> convertPartsToArrayLists(ArrayList<Part> parts) {
       ArrayList<ArrayList<Note>> counterpointArrayList = new ArrayList<>();
-      for(int i = 0; i < counterpointParts.size(); i++) {
-        if(counterpointParts.get(i).size() > 0) {
-          counterpointArrayList.add(convertPartToArrayList(counterpointParts.get(i)));
+      for(int i = 0; i < parts.size(); i++) {
+        if(parts.get(i).size() > 0) {
+          counterpointArrayList.add(convertPartToArrayList(parts.get(i)));
         }
       }
+      return counterpointArrayList;
     }
 
     // converts a Phrase object into an ArrayList of notes, gets rid of rests at beginning and end
