@@ -6,6 +6,7 @@ public class Scale {
   int rootPitch;
   int scaleMode;
   ArrayList<String> scaleNames;
+  PhraseAnalyzer phraseAnalyzer;
 
   public Scale(int rP, int sM) {
     rootPitch = rP;
@@ -13,10 +14,11 @@ public class Scale {
     scaleNames = new ArrayList<>();
     scaleNames.add("MAJOR");
     scaleNames.add("MINOR");
+    phraseAnalyzer = new PhraseAnalyzer();
   }
 
   public int getRootPitch() {
-    return rootPitch;
+    return phraseAnalyzer.getRawNote(rootPitch);
   }
 
   public int getScaleMode() {
@@ -25,6 +27,6 @@ public class Scale {
 
   @Override
   public String toString() {
-    return rootPitch + " " + scaleNames.get(scaleMode);
+    return phraseAnalyzer.getLetterFromPitchValue(rootPitch) + " " + scaleNames.get(scaleMode);
   }
 }

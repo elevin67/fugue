@@ -64,6 +64,6 @@ public class CounterNote implements JMC {
 
   @Override
   public String toString() {
-    return scale.toString() + " " + species + " " + consonant;
+    return analyzer.getLetterFromPitchValue(referenceNote.getPitch()) + " in " + scale.toString() + " " + species + " " + consonant;
   }
 }

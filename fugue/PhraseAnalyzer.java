@@ -100,7 +100,7 @@ public class PhraseAnalyzer {
     return scales;
   }
 
-  private Integer[] getNoteScale(int note, int scaleMode) {
+  public Integer[] getNoteScale(int note, int scaleMode) {
     Integer[] mode = scaleModes.get(scaleMode);
     Integer[] scale = new Integer[mode.length];
     for(int j = 0; j < mode.length; j++) {
@@ -163,7 +163,7 @@ public class PhraseAnalyzer {
 
   // utility functions
 
-  private ArrayList<Integer> getRawNotesInPhrase(Phrase phrase) {
+  public ArrayList<Integer> getRawNotesInPhrase(Phrase phrase) {
     ArrayList<Integer> rawNotes = new ArrayList<>();
     for(int i = 0; i < phrase.size(); i++) {
       rawNotes.add(phrase.getNote(i).getPitch());
@@ -188,9 +188,28 @@ public class PhraseAnalyzer {
     return dissonants;
   }
 
+  public String getLetterFromPitchValue(int pitch) {
+    int raw_pitch = getRawNote(pitch);
+    String letter;
+    switch(raw_pitch) {
+      case 0: letter = "C"; break;
+      case 1: letter = "C#"; break;
+      case 2: letter = "D"; break;
+      case 3: letter = "D#"; break;
+      case 4: letter = "E"; break;
+      case 5: letter = "F"; break;
+      case 6: letter = "F#"; break;
+      case 7: letter = "G"; break;
+      case 8: letter = "G#"; break;
+      case 9: letter = "A"; break;
+      case 10: letter = "A#"; break;
+      case 11: letter = "B"; break;
+      default: letter = ""; break;
+    }
+    return letter;
+  }
 
-
-  private int getRawNote(int pitch) {
+  public int getRawNote(int pitch) {
     return (pitch % 12);
   }
 }

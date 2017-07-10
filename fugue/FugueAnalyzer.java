@@ -37,19 +37,13 @@ public class FugueAnalyzer extends Frame implements JMC {
        Phrase subject = getSubject(s);
        ArrayList<Note> subjectArrayList = convertPhraseToArrayList(subject);
 
-       ArrayList<CounterNote> counterpoint = analyzeSubjectCounterpoint(s, subjectArrayList);
-      //  System.out.println(counterpoint.size());
-      //  for(int i = 0; i < counterpoint.size(); i++) {
-      //    System.out.println("Reference note: " + counterpoint.get(i).getReferenceNote());
-      //    System.out.println("Counterpoint: " + counterpoint.get(i).getCounterNotes());
-      //  }
+       ArrayList<Counterpoint> counterpoint = analyzeSubjectCounterpoint(s, subjectArrayList);
      }
    }
 
    // main functions
 
    // identifies the subject at the beginning of the piece
-   // works
    private Phrase getSubject(Score score) {
      double earliestStartTime = 1000000000.0;
      int startIndex = 0;
@@ -68,6 +62,8 @@ public class FugueAnalyzer extends Frame implements JMC {
          lastStartTime = earliestStartTime;
          earliestStartTime = startTime;
          startIndex = index;
+       } else if(startTime > earliestStartTime && startTime < lastStartTime) {
+         lastStartTime = startTime;
        }
        index++;
      }
@@ -104,15 +100,21 @@ public class FugueAnalyzer extends Frame implements JMC {
    // analyze counterpoint per note and general counterpoint per phrase to help eliminate possibilities when looping over options?? interesting...
    // finds all the subjects within the piece, adds the subsequent counterpoint melodies to a data structure
    // going to add more than just the note to the ArrayList, will need to make new object
-   private ArrayList<CounterNote> analyzeSubjectCounterpoint(Score score, ArrayList<Note> phrase) {
-     ArrayList<CounterNote> counterpoint = new ArrayList<>();
-
+   private ArrayList<Counterpoint> analyzeSubjectCounterpoint(Score score, ArrayList<Note> phrase) {
+     ArrayList<Counterpoint> counterpoint = new ArrayList<>();
      ArrayList<Subject> subjects = findSubjects(score, phrase);
      for(int i = 0; i < subjects.size(); i++) {
        Subject subject = subjects.get(i);
-       counterpoint.addAll(addSubjectCounterPoint(score,subject.getStartIndex(),subject.getEndIndex(),subject.getPhraseIndex(), subject.getPartIndex()));
+       counterpoint.add(addSubjectCounterPoint(score,subject.getStartIndex(),subject.getEndIndex(),subject.getPhraseIndex(), subject.getPartIndex()));
      }
-
+     // print check
+     for(int i = 0; i < counterpoint.size(); i++) {
+       System.out.println(counterpoint.get(i));
+       ArrayList<CounterNote> counternotes = counterpoint.get(i).getCounterNotes();
+       for(int j = 0; j < counternotes.size(); j++) {
+         System.out.println(counternotes.get(j));
+       }
+     }
      return counterpoint;
    }
 
@@ -180,7 +182,8 @@ public class FugueAnalyzer extends Frame implements JMC {
          break;
        }
      }
-     if(matches >= threshold && pitchMatch >= threshold) {
+    //  if(matches >= threshold && pitchMatch >= threshold)
+     if(matches >= threshold) {
        start = noteIndex;
        end = index;
        return true;
@@ -189,7 +192,7 @@ public class FugueAnalyzer extends Frame implements JMC {
    }
 
     // going to add more than just the notes and referenceNote to CounterNote, will modify subject and second for loop
-    private ArrayList<CounterNote> addSubjectCounterPoint(Score score, int startIndex, int endIndex, int phraseIndex, int partIndex) {
+    private Counterpoint addSubjectCounterPoint(Score score, int startIndex, int endIndex, int phraseIndex, int partIndex) {
       Part subjectPart = score.getPart(partIndex);
       Phrase subjectPhrase = subjectPart.getPhrase(phraseIndex);
       double startTime = subjectPhrase.getNoteStartTime(startIndex);
@@ -209,37 +212,10 @@ public class FugueAnalyzer extends Frame implements JMC {
         counterpointParts.add(part.copy(startTime, endTime,false,false,false));
       }
 
-      // Score sScore = new Score();
-      // Part sPart = new Part();
-      // sPart.addPhrase(subject);
-      // sScore.addPart(sPart);
-      // Write.midi(sScore,"subject.mid");
-      System.out.println("Subject");
-//      System.out.println("Subject length: " + subject.getEndTime()+"\n\n\n\n");
-      System.out.println(subject+"\n\n\n");
+      ArrayList<CounterNote> counter_notes = getCounterpointPerNote(counterpointParts,subject);
+      CounterPhrase counter_phrase = new CounterPhrase(subject);
 
-
-      // for(int i = 0; i < counterpointParts.size(); i++) {
-      //   Score partScore = new Score();
-      //   partScore.addPart(counterpointParts.get(i));
-      //   Write.midi(partScore,"subject"+i+".mid");
-      //   System.out.println("Counterpoint "+i);
-      //   System.out.println("length: "+counterpointParts.get(i).getEndTime()+"\n\n\n\n");
-      //   System.out.println(counterpointParts.get(i));
-      // }
-
-
-
-      ArrayList<CounterNote> counterpoint = getCounterpointPerNote(counterpointParts,subject);
-      System.out.println("Counterpoint");
-      System.out.println(counterpoint.size());
-      for(int i = 0; i < counterpoint.size(); i++) {
-        // System.out.println("Reference note: " + counterpoint.get(i).getReferenceNote());
-        System.out.println("Counterpoint: " + counterpoint.get(i).getCounterNotes());
-      }
-      System.out.println("\n\n\n\n");
-
-      return counterpoint;
+      return new Counterpoint(counter_phrase,counter_notes);
     }
 
     // for addSubjectCounterPoint
@@ -293,14 +269,11 @@ public class FugueAnalyzer extends Frame implements JMC {
 
           // will need to find other stuff in here to add to CounterNote, will find here
           if(notes.size() > 0) {
-            // counterpoint.add(new CounterNote(convertPhraseToArrayList(notes), note));
             if(counterpoint.size() >= 1) {
               CounterNote counter = analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),counterpoint.get(counterpoint.size() - 1));
-              System.out.println(counter);
               counterpoint.add(counter);
             } else {
               CounterNote counter = analyzer.analyzeNoteInPhrase(subject,j,convertPhraseToArrayList(notes),null);
-              System.out.println(counter);
               counterpoint.add(counter);
             }
 
@@ -325,7 +298,6 @@ public class FugueAnalyzer extends Frame implements JMC {
     }
 
     // converts a Phrase object into an ArrayList of notes, gets rid of rests at beginning and end
-    // works
     private ArrayList<Note> convertPhraseToArrayList(Phrase phrase) {
       ArrayList<Note> notes = new ArrayList<Note>();
       for(int i = 0; i < phrase.size(); i++) {
@@ -345,7 +317,6 @@ public class FugueAnalyzer extends Frame implements JMC {
     }
 
     // converts a Part object to an ArrayList of notes, gets rid of rests at beginning and end
-    // works
     private ArrayList<Note> convertPartToArrayList(Part part) {
       ArrayList<Note> notes = new ArrayList<>();
       for(int i = 0; i < part.size(); i++) {
@@ -354,16 +325,6 @@ public class FugueAnalyzer extends Frame implements JMC {
           notes.add(phrase.getNote(j));
         }
       }
-
-      // while(true) {
-      //   if(notes.get(0).isRest()) {
-      //     notes.remove(0);
-      //   } else if(notes.get(notes.size()-1).isRest()) {
-      //     notes.remove(notes.size()-1);
-      //   } else {
-      //     break;
-      //   }
-      // }
 
       return cleanNoteArrayList(notes);
     }
